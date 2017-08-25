@@ -1,0 +1,221 @@
+<?php
+declare(strict_types=1);
+
+use PHPUnit\Framework\TestCase;
+use GuzzleHttp\Client;
+
+final class ApiTest extends TestCase {
+
+	private function baseData() {
+		$dao = new GrcPool_Member_DAO();
+		$sql = 'delete from grcpool.member where username = \'phptest\'';$dao->executeQuery($sql);
+		$sql = 'delete from grcpool.member_host where hostName like \'php-test%\'';$dao->executeQuery($sql);
+		$sql = 'delete from grcpool.member_host_project where hostCpid = \'aaaaaaaaaaaaaaaaaaaa\'';$dao->executeQuery($sql);
+	}
+	
+	public function setUp() {
+		global $DATABASE;
+		$PROPERTY = new Property(Constants::PROPERTY_FILE);
+		$DATABASE = new Database($PROPERTY->get('databaseUser'),$PROPERTY->get('databasePassword'),$PROPERTY->get('databaseName'),$PROPERTY->get('databaseServer'));
+		$DATABASE->connect();
+	}
+
+	
+	public function testProjects() {
+		$client = new Client(array(
+				'base_uri' => 'https://dev.grcpool.com',
+				'verify' => false
+		));
+		$jsonArr = array();
+		$response = $client->post('/api/projects',[
+				'json' => $jsonArr
+		]);
+		$contents = $response->getBody()->getContents();
+		$json = json_decode($contents,true);
+		//$this->assertGreaterThan(1,count($json));
+	}
+	
+	
+	public function testInvalidKey() {
+		$this->baseData();
+		$client = new Client(array(
+			'base_uri' => 'https://dev.grcpool.com',
+			'verify' => false
+		));
+		$input = [
+			'secretKey' => 'aninvalidkey',
+			'emailAddress' => 'phptest@grcpool.com',
+			'username'=>'phptest',
+			'password'=>'myphptestpassword'
+		];
+		$response = $client->post('/api/createAccount',[
+			'json' => $input
+		]);
+		$contents = $response->getBody()->getContents();
+		$json = json_decode($contents,true);
+		$this->assertEquals(Constants::API_ERROR_000,$json['errors']['000']);
+	}
+	
+	public function testCreateUser() {
+		$this->baseData();
+		$client = new Client(array(
+				'base_uri' => 'https://dev.grcpool.com',
+				'verify' => false
+		));
+		$input = [
+				'secretKey' => '6f1fbaf42ce80d643404138122aba981',
+				'emailAddress' => 'phptest@grcpool.com',
+				'username'=>'phptest',
+				'password'=>'myphptestpassword'
+		];
+		$response = $client->post('/api/createAccount',[
+				'json' => $input
+		]);
+		$contents = $response->getBody()->getContents();
+		$json = json_decode($contents,true);
+		$this->assertEquals('de643ea5f29866e4ae2fd2098250f390',$json['key']);
+		$dao = new GrcPool_Member_DAO();
+		$member = $dao->initWithEmail('phptest@grcpool.com');
+		$this->assertEquals('de643ea5f29866e4ae2fd2098250f390',$member->getPasswordHash());
+	}
+	
+	public function testGetHostsForAccount() {
+		$dao = new GrcPool_Member_DAO();
+		$member = $dao->initWithEmail('phptest@grcpool.com');
+		$hostDao = new GrcPool_Member_Host_DAO();
+		$host = new GrcPool_Member_Host_OBJ();
+		$host->setMemberId($member->getId());
+		$host->setCpid('aaaaaaaaaaaaaaaaaaaa');
+		$host->setModel('');
+		$host->setOsName('');
+		$host->setVirtualBoxVersion('');
+		$host->setProductName('');
+		$host->setFirstContact(time());
+		$host->setLastContact(time());
+		$host->setNumberOfCpus(8);
+		$host->setNumberOfCudas(0);
+		$host->setNumberOfAmds(0);
+		$host->setNumberOfIntels(0);
+		$hostIds = array();
+		for ($i = 0; $i <= 1; $i++) {
+			$host->setId(0);
+			$host->setHostName('php-test-0'.$i);
+			$hostDao->save($host);
+			array_push($hostIds,$host->getId());
+		}
+		$projDao = new GrcPool_Member_Host_Project_DAO();
+		$projIds = array();
+		foreach ($hostIds as $idx => $hostId) {
+			$proj = new GrcPool_Member_Host_Project_OBJ();
+			$proj->setMemberId($member->getId());
+			$proj->setHostCpid('aaaaaaaaaaaaaaaaaaaa');
+			$proj->setHostDbid(0);
+			if ($idx) {
+				$proj->setProjectUrl('http://www.primegrid.com/');
+			} else {
+				$proj->setProjectUrl('http://einstein.phys.uwm.edu/');
+			}
+			$proj->setNoCpu(0);
+			$proj->setNoNvidiaGpu(0);
+			$proj->setNoAtiGpu(0);
+			$proj->setNoIntelGpu(0);
+			$proj->setResourceShare(100);
+			$proj->setAttached(1);
+			$proj->setHostId($hostId);
+			$projIds[$hostId] = array();
+			$projDao->save($proj);
+		}
+		$client = new Client(array(
+				'base_uri' => 'https://dev.grcpool.com',
+				'verify' => false
+		));
+		$response = $client->post('/api/hosts',[
+				'json' => [
+						//'secretKey' => '6f1fbaf42ce80d643404138122aba981',
+						'key' => 'de643ea5f29866e4ae2fd2098250f390'
+				]
+		]);
+		$contents = $response->getBody()->getContents();
+		$json = json_decode($contents,true);
+		//print_r($json);
+		$this->assertEquals('php-test-00',$json['hosts'][0]['hostName']);
+		$this->assertEquals('http://einstein.phys.uwm.edu/',$json['hosts'][0]['projects'][0]['url']);
+		$this->assertEquals('php-test-01',$json['hosts'][1]['hostName']);
+		$this->assertEquals('http://www.primegrid.com/',$json['hosts'][1]['projects'][0]['url']);
+	}
+	
+	public function testHostChange() {
+		$dao = new GrcPool_Member_DAO();
+		$member = $dao->initWithEmail('phptest@grcpool.com');
+		$hostDao = new GrcPool_Member_Host_DAO();
+		$hosts = $hostDao->getWithMemberId($member->getId());
+		$host = array_pop($hosts);
+		$client = new Client(array(
+				'base_uri' => 'https://dev.grcpool.com',
+				'verify' => false
+		));
+		$jsonArr = array(
+				//'secretKey' => '6f1fbaf42ce80d643404138122aba981',
+				'key' => 'de643ea5f29866e4ae2fd2098250f390',
+				'hostId' => $host->getId(),
+				'projects' => [
+					0 => [
+						'url' => 'http://www.primegrid.com/',
+						'noCpu' => 1,
+						'noNvidiaGpu' => 1,
+						'noAtiGpu' => 1,
+						'noIntelGpu' => 1,
+						'resourceShare' => 1,
+						'attached' => 0
+					]
+				]
+		);
+		$response = $client->post('/api/host',[
+				'json' => $jsonArr
+		]);
+		$contents = $response->getBody()->getContents();
+		$json = json_decode($contents,true);
+		//echo json_encode($json, JSON_PRETTY_PRINT);
+		//print_r($json);
+		$project = $json['projects'][0];
+		$this->assertEquals(1,$project['noCpu']);
+		$this->assertEquals(1,$project['noNvidiaGpu']);
+		$this->assertEquals(1,$project['noAtiGpu']);
+		$this->assertEquals(1,$project['noIntelGpu']);
+		$this->assertEquals(1,$project['resourceShare']);
+		$this->assertEquals(0,$project['attached']);
+		$this->assertEquals('http://www.primegrid.com/',$project['url']);
+	}
+	
+	public function testAddProject() {
+		$dao = new GrcPool_Member_DAO();
+		$member = $dao->initWithEmail('phptest@grcpool.com');
+		$hostDao = new GrcPool_Member_Host_DAO();
+		$hosts = $hostDao->getWithMemberId($member->getId());
+		$host = array_pop($hosts);
+		$client = new Client(array(
+				'base_uri' => 'https://dev.grcpool.com',
+				'verify' => false
+		));
+		$jsonArr = array(
+				//'secretKey' => '6f1fbaf42ce80d643404138122aba981',
+				'key' => 'de643ea5f29866e4ae2fd2098250f390',
+				'hostId' => $host->getId(),
+				'projects' => [
+						0 => [
+								'url' => 'http://escatter11.fullerton.edu/nfs/'
+						]
+				]
+		);
+		$response = $client->post('/api/host',[
+				'json' => $jsonArr
+		]);
+		$contents = $response->getBody()->getContents();
+		$json = json_decode($contents,true);
+		$this->assertEquals('http://escatter11.fullerton.edu/nfs/',$json['projects'][0]['url']);
+	}
+	
+	
+	
+
+}
