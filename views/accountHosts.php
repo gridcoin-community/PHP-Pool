@@ -1,5 +1,4 @@
 <?php
-
 $webPage->addBreadcrumb('account','user','/account');
 
 $webPage->appendScript('
@@ -29,7 +28,6 @@ if ($this->view->memHosts) {
 			<thead>
 				<tr>
 					<th></th>
-					<th class="text-center">Pool</th>
 					<th class="text-right">RAC</th>
 					<th class="text-right">
 						Mag
@@ -61,6 +59,8 @@ if ($this->view->memHosts) {
 				}
 			}
 		}
+		
+		
 		$hostName = 'unknown';
 		if ($host[0]->getCustomName() != '') {
 			$hostName = $host[0]->getCustomName();
@@ -69,12 +69,10 @@ if ($this->view->memHosts) {
 				$hostName = $host[0]->getHostName();
 			}
 		}
-
 		$totalMag = 0;
 		$totalGrc = 0;
 		$projectContent = '';
 		$numberOfProjects = 0;
-		$pools = array();
 		$racTotal = 0;
 		foreach ($host as $h) {
 			foreach ($this->view->hosts as $a) {
@@ -85,7 +83,6 @@ if ($this->view->memHosts) {
 					$totalAllMag += $a->getMag();
 					$totalGrc += Utils::truncate($a->getMag()*$this->view->magUnit,8);
 					$totalAllGrc += Utils::truncate($a->getMag()*$this->view->magUnit,8);
-					$pools[$a->getProjectPoolid()] = 1;
 					$racTotal += $a->getAvgCredit();
 					$magCalc = Constants::GRC_MAG_MULTIPLIER.' * ( ( '.$a->getAvgCredit().' / '.$this->view->accounts[$a->getAccountId()]->getRac().' ) / '.$this->view->poolWhiteListCount.' )';
 					$projectContent .= '
@@ -97,7 +94,6 @@ if ($this->view->memHosts) {
 								href="'.$this->view->accounts[$a->getAccountId()]->getBaseUrl().'/show_host_detail.php?hostid='.$a->getHostDbid().'"
 							>'.$this->view->accounts[$a->getAccountId()]->getName().'</a>&nbsp;<small><i class="fa fa-external-link"></i></small></a>
 							</td>
-							<td class="text-center">'.$a->getProjectPoolId().'</td>
 							<td class="text-right">'.$a->getAvgCredit().'</td>							
 							<td class="text-right">
 								<a href="#" data-toggle="tooltip" title="'.$magCalc.'">
@@ -110,7 +106,6 @@ if ($this->view->memHosts) {
 				}
 			}
 		}
-		ksort($pools);
 		$content .= '
 			<tr>
 				<td style="background-color:#f0f0f0">
@@ -123,7 +118,6 @@ if ($this->view->memHosts) {
 						<a href="#" data-toggle="tooltip" title="This host possibly has an invalid project attached."><i style="color:darkred;" class="fa fa-warning"></i></a>										
 					':'').'		
 				</td>
-				<td class="text-center" style="font-weight:bold;background-color:#f0f0f0">'.(implode(" & ",array_keys($pools))).'</td>
 				<td class="text-right" style="font-weight:bold;background-color:#f0f0f0">'.$racTotal.'</td>
 				<td class="text-right" style="font-weight:bold;background-color:#f0f0f0">'.number_format($totalMag,2).'</td>
 				<td class="text-right" style="font-weight:bold;background-color:#f0f0f0">'.number_format($totalGrc,3).'</td>
@@ -137,24 +131,12 @@ if ($this->view->memHosts) {
 					
 			<tr style="background-color:transparent;"><td colspan="5"><div style="margin:10px;"></div></td></tr>					
 		';
-// 		if (true || $rows > 1) {
-// 			$content .= '
-// 				<tr style="background-color:#f0f0f0;border-top:2px solid #999;">
-// 					<td style="background-color:#f0f0f0;"><strong>Host Total</strong></td>
-// 					<td style="background-color:#f0f0f0;"></td>
-// 					<td style="background-color:#f0f0f0;" class="text-right"></td>				
-// 					<td style="background-color:#f0f0f0;" class="text-right"><strong>'.$totalMag.'</strong></td>
-// 					<td style="background-color:#f0f0f0;" class="text-right"><strong>'.number_format($totalGrc,8).'</strong></td>
-// 				</tr>
-// 				<tr style="background-color:transparent;"><td colspan="7"><div style="margin:20px;"></div></td></tr>
-// 			';
-// 		}				
+	
 	}
 	if (true || $hostCount > 1) {
 		$content .= '
 			<tr style="background-color:#ddd;border-top:4px solid #555;">
 				<td style="background-color:#ddd;"><strong>Hosts Total</strong></td>
-				<td style="background-color:#ddd;"></td>
 				<td style="background-color:#ddd;" class="text-right"></td>
 				<td style="background-color:#ddd;" class="text-right"><strong>'.number_format($totalAllMag,2).'</strong></td>
 				<td style="background-color:#ddd;" class="text-right"><strong>'.number_format($totalAllGrc,3).'</strong></td>

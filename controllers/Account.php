@@ -66,7 +66,6 @@ class GrcPool_Controller_Account extends GrcPool_Controller {
 		$this->view->memHosts = $memHosts;
 		
 		$hosts = $hostDao->getWithMemberId($this->getUser()->getId());
-
 		$this->view->hosts = $hosts;
 		
 		$accountDao = new GrcPool_Boinc_Account_DAO();

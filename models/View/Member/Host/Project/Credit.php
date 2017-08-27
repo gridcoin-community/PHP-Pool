@@ -3,7 +3,7 @@
 THIS FILE WAS CREATED AUTOMATICALLY BY PHP MODEL/OBJECT CREATOR
 MANUAL MODIFICATIONS WILL BE AUTOMATICALLY OVERWRITTEN
 ************************************************************************ */
-abstract class GrcPool_View_Member_Host_Project_Credit_MODEL {
+abstract class _View_Member_Host_Project_Credit_MODEL {
 
 	public function __construct() { }
 
@@ -57,10 +57,10 @@ abstract class GrcPool_View_Member_Host_Project_Credit_MODEL {
 	public function getHostName():string {return $this->_hostName;}
 }
 
-abstract class GrcPool_View_Member_Host_Project_Credit_MODELDAO extends TableDAO {
+abstract class _View_Member_Host_Project_Credit_MODELDAO extends TableDAO {
 	protected $_database = Constants::DATABASE_NAME;
 	protected $_table = 'view_member_host_project_credit';
-	protected $_model = 'GrcPool_View_Member_Host_Project_Credit_OBJ';
+	protected $_model = '_View_Member_Host_Project_Credit_OBJ';
 	protected $_primaryKey = '';
 	protected $_fields = array(
 		'memberId' => array('type'=>'INT','dbType'=>'int(11)'),
