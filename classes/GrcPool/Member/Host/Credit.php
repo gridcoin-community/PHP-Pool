@@ -60,7 +60,7 @@ class GrcPool_Member_Host_Credit_DAO extends GrcPool_Member_Host_Credit_MODELDAO
 	}
 	
  	public function getOwedWithNoOwner() {
- 		$sql = 'select * from '.$this->getFullTableName().' where (hostDbid,accountId) not in (select hostDbid,accountId from grcpool.member_host_project) and owed > 0';
+ 		$sql = 'select * from '.$this->getFullTableName().' where (hostDbid,accountId) not in (select hostDbid,accountId from '.Constants::DATABASE_NAME.'.member_host_project) and owed > 0';
  		return $this->queryObjects($sql);
  	}
 

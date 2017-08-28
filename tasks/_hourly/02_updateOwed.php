@@ -36,61 +36,47 @@ echo "Min Stake Balance: ".($minStakeBalance/COIN)."\n";
 $hostCreditDao = new GrcPool_Member_Host_Credit_DAO();
 $hostDao = new GrcPool_Member_Host_DAO();
 
-for ($poolId = 1; $poolId <= Property::getValueFor(Constants::PROPERTY_NUMBER_OF_POOLS); $poolId++) {
-	echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% POOL # ".$poolId."\n";
-	$daemon = GrcPool_Utils::getDaemonForPool($poolId);
-	
-	$basisObj = $walletDao->initWithKey($poolId);
-	$WALLETBASIS = $basisObj->getBasis();
-	echo "Wallet Basis: ".($WALLETBASIS/COIN)."\n";
-	$totalBalance = $daemon->getTotalBalance()*COIN;
-	echo "Current Balance: ".($totalBalance/COIN)."\n";
-	$totalInterest = $daemon->getTotalInterest()*COIN;
-	echo "Wallet Interest: ".($totalInterest/COIN)."\n";
-	$totalBalance = $totalBalance-$totalInterest;
-	echo "Available Balance: ".($totalBalance/COIN)."\n";
-	
-	if ($totalBalance < $WALLETBASIS) {
-		echo ($totalBalance/COIN) .' to low < '.($WALLETBASIS/COIN)."\n";
-		continue;
-	}
-	
-	$totalOwed = $hostCreditDao->getTotalOwedForPool($poolId)*COIN;
-	
-	echo "Total Owed: ".($totalOwed/COIN)."\n";
-	
-	$stakeBalance = $totalBalance - $WALLETBASIS - $totalOwed;
-	
-	echo 'Stake Balance: '.($stakeBalance/COIN)." = ".($totalBalance/COIN)." - ".($WALLETBASIS/COIN)." - ".($totalOwed/COIN)."\n";
-	
-	if ($totalBalance - $stakeBalance < $WALLETBASIS) {
-		echo 'Funds Too Low: '."\n";
-	}
-	
-	$totalMag = $hostCreditDao->getTotalMagForPool($poolId);
-	echo 'Total Mag: '.$totalMag."\n";
-	
-	if ($stakeBalance < $minStakeBalance) {
-		echo 'not enough stake balance  '.($minStakeBalance/COIN).'  >  '.number_format($stakeBalance/COIN,8)."\n";
-		continue;
-	}
-	
-	$sql = 'update grcpool.member_host_credit set grcpool.member_host_credit.owed = grcpool.member_host_credit.owed + ((grcpool.member_host_credit.mag/'.$totalMag.') * '.($stakeBalance/COIN).'), 
-			grcpool.member_host_credit.owedCalc = concat(grcpool.member_host_credit.owedCalc,\'+((\',grcpool.member_host_credit.mag,\'/\','.$totalMag.',\')*\','.($stakeBalance/COIN).',\')\') where mag > 0 and poolId = '.$poolId;
-	//echo "\n\n".$sql."\n\n";
-	$hostCreditDao->executeQuery($sql);
-	
+$daemon = GrcPool_Utils::getDaemonForPool();
 
-}	
+$basisObj = $walletDao->initWithKey(1);
+$WALLETBASIS = $basisObj->getBasis();
+echo "Wallet Basis: ".($WALLETBASIS/COIN)."\n";
+$totalBalance = $daemon->getTotalBalance()*COIN;
+echo "Current Balance: ".($totalBalance/COIN)."\n";
+$totalInterest = $daemon->getTotalInterest()*COIN;
+echo "Wallet Interest: ".($totalInterest/COIN)."\n";
+$totalBalance = $totalBalance-$totalInterest;
+echo "Available Balance: ".($totalBalance/COIN)."\n";
+
+if ($totalBalance < $WALLETBASIS) {
+	echo ($totalBalance/COIN) .' to low < '.($WALLETBASIS/COIN)."\n";
+	exit;
+}
+
+$totalOwed = $hostCreditDao->getTotalOwed()*COIN;
+echo "Total Owed: ".($totalOwed/COIN)."\n";
+
+$stakeBalance = $totalBalance - $WALLETBASIS - $totalOwed;
+echo 'Stake Balance: '.($stakeBalance/COIN)." = ".($totalBalance/COIN)." - ".($WALLETBASIS/COIN)." - ".($totalOwed/COIN)."\n";
+
+if ($totalBalance - $stakeBalance < $WALLETBASIS) {
+	echo 'Funds Too Low: '."\n";
+	exit;
+}
+
+$totalMag = $hostCreditDao->getTotalMag();
+echo 'Total Mag: '.$totalMag."\n";
+
+if ($stakeBalance < $minStakeBalance) {
+	echo 'not enough stake balance  '.($minStakeBalance/COIN).'  >  '.number_format($stakeBalance/COIN,8)."\n";
+	exit;
+}
+
+$sql = 'update '.Constants::DATABASE_NAME.'.member_host_credit set '.Constants::DATABASE_NAME.'.member_host_credit.owed = '.Constants::DATABASE_NAME.'.member_host_credit.owed + (('.Constants::DATABASE_NAME.'.member_host_credit.mag/'.$totalMag.') * '.($stakeBalance/COIN).'),
+		'.Constants::DATABASE_NAME.'.member_host_credit.owedCalc = concat('.Constants::DATABASE_NAME.'.member_host_credit.owedCalc,\'+((\','.Constants::DATABASE_NAME.'.member_host_credit.mag,\'/\','.$totalMag.',\')*\','.($stakeBalance/COIN).',\')\') where mag > 0';
+echo "\n\n".$sql."\n\n";
+$hostCreditDao->executeQuery($sql);
 
 // cleanup rows with a long owedCalc
-$sql = 'update grcpool.member_host_credit set owedCalc = concat(\'+\',owed) where char_length(owedCalc) > 500';
+$sql = 'update '.Constants::DATABASE_NAME.'.member_host_credit set owedCalc = concat(\'+\',owed) where char_length(owedCalc) > 500';
 $hostDao->executeQuery($sql);
-
-
-// $sql = 'update grcpool.member_host_credit set grcpool.member_host_credit.owed = grcpool.member_host_credit.owed + ((grcpool.member_host_credit.mag/'.$totalMag.') * '.($stakeBalance/COIN).')';
-// $hostCreditDao->executeQuery($sql);
-// $sql = 'update grcpool.member_host_credit set grcpool.member_host_credit.owedCalc = concat(grcpool.member_host_credit.owedCalc,\'+((\',grcpool.member_host_credit.mag,\'/\','.$totalMag.',\')*\','.($stakeBalance/COIN).',\')\') where mag != 0';
-// $hostCreditDao->executeQuery($sql);
-
-

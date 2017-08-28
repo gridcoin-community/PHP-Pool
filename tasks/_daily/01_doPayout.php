@@ -37,138 +37,132 @@ $memberDao = new GrcPool_Member_DAO();
 // PROPERTIES OF PAYOUT
 $PAYOUTFEE = $settingsDao->getValueWithName(Constants::SETTINGS_PAYOUT_FEE);
 
-for ($poolId = 1; $poolId <= Property::getValueFor(Constants::PROPERTY_NUMBER_OF_POOLS); $poolId++) {
-	echo '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% POOL # '.$poolId."\n";
+$daemon = GrcPool_Utils::getDaemonForPool();
+	
+$walletObj = $walletDao->initWithKey(1);
+$WALLETBASIS = $walletObj->getBasis()/COIN;
+$availableBalance = $daemon->getAvailableBalance();
+$totalBalance = $daemon->getTotalBalance();
+$interest = $daemon->getTotalInterest();
+$availablePOR = $totalBalance-$interest-$WALLETBASIS;
+	
+if (!$totalBalance || $totalBalance < $WALLETBASIS) {
+	echo 'CRITICAL: !!!!!!!!!!!!!!!! Total Balance error (1): '.$totalBalance."\n";
+	exit;
+}
+	
+echo 'INFO: Min Payout: '.$MINOWEPAYOUT."\n";
+echo 'INFO: Wallet Basis: '.$WALLETBASIS."\n";
+echo 'INFO: Hot Wallet Total Balance: '.$totalBalance."\n";
+echo 'INFO: Hot Wallet Available Balance: '.$availableBalance."\n";
+	
+$owes = $viewDao->getOwed();
+if (!$owes) {
+	echo 'INFO: No Owes '."\n";
+	exit;
+}
+	
+/**
+ * 
+ * @var GrcPool_PayoutGroup[]
+ */
+$owedGroups = array();
+$totalAmountOwed = 0;
+foreach ($owes as $owe) {
+	if (!isset($owedGroups[$owe->getId()])) {
+		$owedGroups[$owe->getId()] = new GrcPool_PayoutGroup();
+	}
+	$owedGroups[$owe->getId()]->add($owe);
+	$totalAmountOwed += $owe->getOwed();
+}
+$owe = null;
+	
+echo "INFO: Total Owed: ".$totalAmountOwed."\n";
+if ($totalAmountOwed > $availablePOR) {
+	echo "CRITICAL: !!!!!!!!!! Trying to pay out to much ".($totalAmountOwed)." > ".($availablePOR)."\n";
+	exit;
+}
+	
+foreach ($owedGroups as $owedGroup) {
+	set_time_limit(60);
+	
+	echo '~~~~ PAYOUT FOR '.$owedGroup->getUsername()." Owed: ".$owedGroup->getOwed()."\n";
+	$payoutObj = new GrcPool_Payout();
+		
+	$member = $memberDao->initWithKey($owedGroup->getId());
+	if ($member && $member->getId() && $member->getMinPayout()) {
+		$payoutObj->setMinOwePayout($member->getMinPayout());
+	} else {
+		$payoutObj->setMinOwePayout($MINOWEPAYOUT);
+	}
+	$payoutObj->setPayoutFee($PAYOUTFEE);
 
-	$daemon = GrcPool_Utils::getDaemonForPool($poolId);
+	$payoutData = $payoutObj->process($owedGroup);
 	
-	$walletObj = $walletDao->initWithKey($poolId);
-	$WALLETBASIS = $walletObj->getBasis()/COIN;
-	$availableBalance = $daemon->getAvailableBalance();
-	$totalBalance = $daemon->getTotalBalance();
-	$interest = $daemon->getTotalInterest();
-	$availablePOR = $totalBalance-$interest-$WALLETBASIS;
-	
-	if (!$totalBalance || $totalBalance < $WALLETBASIS) {
-		echo 'CRITICAL: !!!!!!!!!!!!!!!! Total Balance error (1): '.$totalBalance."\n";
+	print_r($payoutData);
+		
+	if ($payoutData->error) {
+		echo "     ERROR: ".$payoutData->error."\n";
 		continue;
 	}
 	
-	echo 'INFO: Min Payout: '.$MINOWEPAYOUT."\n";
-	echo 'INFO: Wallet Basis: '.$WALLETBASIS."\n";
-	echo 'INFO: Hot Wallet Total Balance: '.$totalBalance."\n";
-	echo 'INFO: Hot Wallet Available Balance: '.$availableBalance."\n";
+	$tx = '';
 	
-	$owes = $viewDao->getOwedForPool($poolId);
-	if (!$owes) {
-		echo 'INFO: No Owes '."\n";
-		continue;
+	if ($payoutData->amount == 0) {
+		$tx = 'DONATION';
+	} else {
+		try {
+			$tx = $daemon->send($owedGroup->getGrcAddress(),$payoutData->amount);
+		} catch (Exception $e) {
+			echo "CRITICAL: !!!!!!!!!!!  DAEMON SEND TRY FAILED\n";
+		}
+		echo 'Tx '.$tx."\n";
 	}
-	
-	/**
-	 * 
-	 * @var GrcPool_PayoutGroup[]
-	 */
-	$owedGroups = array();
-	$totalAmountOwed = 0;
-	foreach ($owes as $owe) {
-		if (!isset($owedGroups[$owe->getId()])) {
-			$owedGroups[$owe->getId()] = new GrcPool_PayoutGroup();
-		}
-		$owedGroups[$owe->getId()]->add($owe);
-		$totalAmountOwed += $owe->getOwed();
-	}
-	$owe = null;
-	
-	echo "INFO: Total Owed: ".$totalAmountOwed."\n";
-	if ($totalAmountOwed > $availablePOR) {
-		echo "CRITICAL: !!!!!!!!!! Trying to pay out to much ".($totalAmountOwed)." > ".($availablePOR)."\n";
-		continue;
-	}
-	
-	foreach ($owedGroups as $owedGroup) {
-		set_time_limit(60);
-	
-		echo '~~~~ PAYOUT FOR '.$owedGroup->getUsername()." Owed: ".$owedGroup->getOwed()."\n";
-		$payoutObj = new GrcPool_Payout();
 		
-		$member = $memberDao->initWithKey($owedGroup->getId());
-		if ($member && $member->getId() && $member->getMinPayout()) {
-			$payoutObj->setMinOwePayout($member->getMinPayout());
-		} else {
-			$payoutObj->setMinOwePayout($MINOWEPAYOUT);
-		}
-		$payoutObj->setPayoutFee($PAYOUTFEE);
-	
-		$payoutData = $payoutObj->process($owedGroup);
-	
-		print_r($payoutData);
-		
-		if ($payoutData->error) {
-			echo "     ERROR: ".$payoutData->error."\n";
-			continue;
-		}
-	
-		$tx = '';
-	
-		if ($payoutData->amount == 0) {
-			$tx = 'DONATION';
-		} else {
-			try {
-				$tx = $daemon->send($owedGroup->getGrcAddress(),$payoutData->amount);
-			} catch (Exception $e) {
-				echo "CRITICAL: !!!!!!!!!!!  DAEMON SEND TRY FAILED\n";
-			}
-			echo 'Tx '.$tx."\n";
-		}
-		
-	 	if ($tx == '') {
-	 		echo "CRITICAL: !!!!!!!!!!!!!! DAEMON TX BLANK\n";
-	 		continue;
-	 	} else {
-	 		$creditIds = $owedGroup->getCreditIds();
-	 		foreach ($creditIds as $creditId) {
-	 			$credit = $creditDao->initWithKey($creditId);
-	 			echo "SETTING TO ZERO ".$credit->getId()." from: ".$credit->getOwed()."\n";
-	 			$credit->setOwed(0);
-	 			$credit->setOwedCalc('');
-	 			$credit->setMemberIdPayout($owedGroup->getId());
- 				$creditDao->save($credit);
-	 		}
-	 		$payout = new GrcPool_Member_Payout_OBJ();
-	 		$payout->setCalculation($owedGroup->getOwedCalc());
-	 		if (strlen($payout->getCalculation()) > 490) {
-	 			$payout->setCalculation(substr($payout->getCalculation(),0,490).'...');
-	 		}
-	 		$payout->setAmount($owedGroup->getOwed());
-	 		$payout->setFee($payoutData->fee);
-	 		$payout->setDonation($payoutData->donation);
-	 		$payout->setMemberId($owedGroup->getId());
-	 		$payout->setUsername($owedGroup->getUsername());
-	 		$payout->setThetime(time());
-	 		$payout->setPoolId($poolId);
-	 		$payout->setAddress($owedGroup->getGrcAddress());
-	 		$payout->setTx($tx=='DONATION'?'':$tx);
- 			print_r($payout);
-			$payoutDao->save($payout);
-	
-	 		$basisIncr = $payoutData->fee+$payoutData->donation;
-	 		echo 'Increase wallet basis by: '.$basisIncr."\n";
+ 	if ($tx == '') {
+ 		echo "CRITICAL: !!!!!!!!!!!!!! DAEMON TX BLANK\n";
+ 		continue;
+ 	} else {
+ 		$creditIds = $owedGroup->getCreditIds();
+ 		foreach ($creditIds as $creditId) {
+ 			$credit = $creditDao->initWithKey($creditId);
+ 			echo "SETTING TO ZERO ".$credit->getId()." from: ".$credit->getOwed()."\n";
+ 			$credit->setOwed(0);
+ 			$credit->setOwedCalc('');
+ 			$credit->setMemberIdPayout($owedGroup->getId());
+				$creditDao->save($credit);
+ 		}
+ 		$payout = new GrcPool_Member_Payout_OBJ();
+ 		$payout->setCalculation($owedGroup->getOwedCalc());
+ 		if (strlen($payout->getCalculation()) > 490) {
+ 			$payout->setCalculation(substr($payout->getCalculation(),0,490).'...');
+ 		}
+ 		$payout->setAmount($owedGroup->getOwed());
+ 		$payout->setFee($payoutData->fee);
+ 		$payout->setDonation($payoutData->donation);
+ 		$payout->setMemberId($owedGroup->getId());
+ 		$payout->setUsername($owedGroup->getUsername());
+ 		$payout->setThetime(time());
+ 		$payout->setAddress($owedGroup->getGrcAddress());
+ 		$payout->setTx($tx=='DONATION'?'':$tx);
+			print_r($payout);
+		$payoutDao->save($payout);
 
+ 		$basisIncr = $payoutData->fee+$payoutData->donation;
+ 		echo 'Increase wallet basis by: '.$basisIncr."\n";
 	 		$walletObj->setBasis($walletObj->getBasis()+($basisIncr*COIN));
-	 		if (!$walletDao->save($walletObj)) {
-	 			echo "CRITICAL: !!!!!!!!!!!!! Wallet Basis not incremented \n";
-	 			echo $walletDao->getError();
-	 			exit;
-	 		}
-	 	
-	 	}
-	}
-	$payoutDao = new GrcPool_Member_Payout_DAO();
-	$totalPaid = $payoutDao->getTotalAmountForPool($poolId);
-	if ($totalPaid) {
-		$settingsDao->setValueWithName(Constants::SETTINGS_TOTAL_PAID_OUT.($poolId==1?'':$poolId),$totalPaid);
-	}
+ 		if (!$walletDao->save($walletObj)) {
+ 			echo "CRITICAL: !!!!!!!!!!!!! Wallet Basis not incremented \n";
+ 			echo $walletDao->getError();
+ 			exit;
+ 		}
+ 	
+ 	}
+}
+$payoutDao = new GrcPool_Member_Payout_DAO();
+$totalPaid = $payoutDao->getTotalAmount();
+if ($totalPaid) {
+	$settingsDao->setValueWithName(Constants::SETTINGS_TOTAL_PAID_OUT,$totalPaid);
 }
 
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DOPAYOUT END ".date("Y.m.d H.i.s")."\n";
