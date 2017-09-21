@@ -49,9 +49,10 @@ if ($FORCE || ($superblockData->pending == 0 && $superblockData->lastBlock != $s
 	$superblockData->version = $version;
 
 	$wl = $daemon->getWhitelistedProjects();
-	$superblockData->whiteListCount = count($wl);
-	$superblockData->projects = $wl;
-	
+	if ($wl) {
+		$superblockData->whiteListCount = count($wl);
+		$superblockData->projects = $wl;
+	}	
 	////////////////////
 	// WHITE LIST STUFF
 	$projectDao = new GrcPool_Boinc_Account_DAO();
@@ -102,14 +103,14 @@ if ($FORCE || ($superblockData->pending == 0 && $superblockData->lastBlock != $s
 
 	// POOL 1
 
-	$mag = $daemon->getMagnitude();
+	$mag = $daemon->getMagnitude($settingsDao->getValueWithName((Constants::SETTINGS_CPID)));
 	$superblockData->mag[0] = $mag;
 	
 	$basisDao = new GrcPool_Wallet_Basis_DAO();
 	$basisObj = $basisDao->initWithKey(1);
 	$superblockData->basis[0] = $basisObj->getBasis();
 	
-	$rsaData = $daemon->getRsa();
+	$rsaData = $daemon->getRsa($settingsDao->getValueWithName((Constants::SETTINGS_CPID)));
 	$superblockData->expectedDailyEarnings[0] = $rsaData[1]['Expected Earnings (Daily)']??0;
 	$superblockData->fulfillment[0] = $rsaData[1]['Fulfillment %']??0;
 	$superblockData->interest[0] = $rsaData[1]['CPID Lifetime Interest Paid']??0;
