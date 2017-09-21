@@ -95,6 +95,7 @@ class BoincApi_Rpc {
 		$dao = new GrcPool_Member_DAO();
 		$hostProjectDao = new GrcPool_Member_Host_Project_DAO();
 		$urlDao = new GrcPool_Boinc_Account_Url_DAO();
+		$creditDao = new GrcPool_Member_Host_Credit_DAO();
 		$keyDao = new GrcPool_Boinc_Account_Key_DAO();
 		$this->member = $dao->initWithUsername((String)$this->xml->name);
 		$this->memberValid = $this->member==null?false:$this->member->getPasswordHash()==(String)$this->xml->password_hash;
@@ -199,7 +200,7 @@ class BoincApi_Rpc {
  						$weakKey = $keyObj->getWeak();
  					}
  				}
- 				if ($account != null && $account->getId() != 0 && (String)$project->account_key == $weakKey) { // key indicates if using pool account
+ 				if ($account != null && $account->getId() != 0 && (String)$project->account_key != "" && (String)$project->account_key == $weakKey) { // key indicates if using pool account
 	 				$dbid = (String)$project->hostid;
 	 				$cpid = (String)$this->xml->host_cpid;
 	 				$obj = $hostProjectDao->getWithMemberIdAndDbidAndAccountId($this->member->getId(),$dbid,$account->getId());
@@ -212,10 +213,14 @@ class BoincApi_Rpc {
 	 						//$obj->setResourceShare(100);
 	 						// I would have liked to add the project if they sere using the weak key here, but could open up security problems if any dbid was accpeted
 	 						// so lets restrict projects being added only from account pages
-	 						$this->error .= $account->getName().' is currently not in your account, please login to the pool and add it first.';
+	 						$this->error .= $account->getName().' is not in your pool account, but was found in your client.';
 	 						if ($echo) echo "CREATED NEW PROJECT FOR HOST\n";
 	 						continue;
 	 					} else {
+	 						if ($obj->getHostDbid() != 0) {
+	 							$this->error .= $account->getName().' a host appears to already have project in pool. Might be a MAC Address problem. You may need to contact support '.Constants::ADMIN_EMAIL_ADDRESS.' for help.';
+	 							continue;	
+	 						}
 	 						if ($echo) echo "FOUND PROJECT WITH CPID\n";
 	 					}
 	 				} else {
@@ -226,8 +231,31 @@ class BoincApi_Rpc {
 	 					// dbid changing, so lets validate it is not duplicate
 	 					$testObj = $hostProjectDao->getWithHostDbIdAndAccountId($dbid, $account->getId());
 	 					if (count($testObj)) {
-	 						$this->error .= $account->getName().' appears to already be in the pool. Please remove the prior project before trying to add with this host.';
+	 						$this->error .= $account->getName().' host already exists in the pool. You may need to contact support '.Constants::ADMIN_EMAIL_ADDRESS.' for help.';
 	 						continue;
+	 					}
+	 					$blackListDao = new GrcPool_Boinc_Host_Blacklist_DAO();
+	 					$blackList = $blackListDao->initWithAccountIdAndDbid($account->getId(),$dbid);
+	 					if ($blackList) {
+	 						// this will cause the project dbid to stay zero, so warning message will persist on site
+	 						$blackList->setBlockMemberId($this->member->getId());
+	 						$blackListDao->save($blackList);
+	 						$this->error .= $account->getName().' host has been blacklisted, please contact '.Constants::ADMIN_EMAIL_ADDRESS.' for support.';
+	 						continue;
+	 					}
+	 					// if changing a non zero hostdbid, the prevoius dbid should be blacklisted
+	 					if ($obj->getHostDbid() != 0) {
+	 						// lets black list this id
+	 						$creditObj = $creditDao->initWithAccountIdAndDbid($account->getId(),$obj->getHostDbid());
+	 						$blackListObj = new GrcPool_Boinc_Host_Blacklist_OBJ();
+	 						$blackListObj->setAccountId($account->getId());
+	 						$blackListObj->setHostDbid($obj->getHostDbid());
+	 						$blackListObj->setMemberId($this->member->getId());
+	 						$blackListObj->setThetime(time());
+	 						if ($creditObj) {
+	 							$blackListObj->setOwed($creditObj->getOwed());
+	 						}
+	 						$blackListDao->save($blackListObj);
 	 					}
 	 				}
 	 				$obj->setHostDbid((String)$project->hostid);
