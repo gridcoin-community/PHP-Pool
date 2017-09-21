@@ -20,10 +20,10 @@ if (!$FORCE && $settingsDao->getValueWithName(Constants::SETTINGS_GRC_CLIENT_ONL
 	echo "GRC CLIENT OFFLINE\n\n";
 	exit;
 }
-$lockFile = 'payout.lock';
-$fp = fopen(dirname(__FILE__).'/../'.$lockFile,"w");
+
+$fp = fopen(Constants::PAYOUT_LOCK_FILE,"w");
 if (!flock($fp, LOCK_EX | LOCK_NB)) {
-	echo('!!!!!!!!!! LOCKED !!!!!!!!!!!!!');
+	echo('CRITICAL: !!!!!!!!!!!! LOCKED !!!!!!!!!!!!!');
 	exit;
 }
 
