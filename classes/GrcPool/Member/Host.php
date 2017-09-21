@@ -7,16 +7,31 @@ class GrcPool_Member_Host_OBJ extends GrcPool_Member_Host_MODEL {
 
 class GrcPool_Member_Host_DAO extends GrcPool_Member_Host_MODELDAO {
 
-	public function deleteWithMemberId($memberId) {
+	/**
+	 * 
+	 * @param int $memberId
+	 */
+	public function deleteWithMemberId(int $memberId) {
 		$sql = 'delete from '.$this->getFullTableName().' where memberId = '.$memberId;
 		$this->executeQuery($sql);
 	}
 	
-	public function initWithMemberIdAndCpId($memberId,$cpid) {
+	/**
+	 * 
+	 * @param int $memberId
+	 * @param string $cpid
+	 * @return NULL|GrcPool_Member_Host_OBJ
+	 */
+	public function initWithMemberIdAndCpId(int $memberId,string $cpid) {
 		return $this->fetch(array($this->where('memberId',$memberId),$this->where('cpId',$cpid)));
 	}
 	
-	public function getWithMemberId($memberId) {
+	/**
+	 * 
+	 * @param int $memberId
+	 * @return GrcPool_Member_Host_OBJ[]
+	 */
+	public function getWithMemberId(int $memberId) {
 		return $this->fetchAll(array($this->where('memberId',$memberId)));
 	}
 	

@@ -13,23 +13,31 @@ class GrcPool_Member_Host_Credit_DAO extends GrcPool_Member_Host_Credit_MODELDAO
 	 * @param int $dbid
 	 * @return NULL|GrcPool_MemberHostCredit_OBJ
 	 */
-	public function initWithAccountIdAndDbid($accountId,$dbid) {
+	public function initWithAccountIdAndDbid(int $accountId,int $dbid) {
 		return $this->fetch(array($this->where('accountId',$accountId),$this->where('hostDbid',$dbid)));
 	}
 	
-	public function getNumberOfActiveHosts() {
+	/**
+	 * 
+	 * @return int
+	 */
+	public function getNumberOfActiveHosts():int {
 		$sql = 'select count(*) as howMany from '.$this->getFullTableName().' where avgCredit > 0';
 		$result = $this->query($sql);
 		return $result[0]['howMany'];
 	}
 	
-	public function setMagToZeroForAccountId($accountId) {
+	/**
+	 * 
+	 * @param int $accountId
+	 */
+	public function setMagToZeroForAccountId(int $accountId) {
 		$sql = "update ".$this->getFullTableName()." set mag = 0 where accountId = '".addslashes($accountId)."'";
 		$this->executeQuery($sql);
 	}
 	
 	/**
-	 * @return int
+	 * @return float
 	 */
 	public function getTotalMag() {
 		$sql = 'select sum(mag) as totalMag from '.$this->getFullTableName();
@@ -37,12 +45,21 @@ class GrcPool_Member_Host_Credit_DAO extends GrcPool_Member_Host_Credit_MODELDAO
 		return $result[0]['totalMag'];
 	}
 	
+	/**
+	 * 
+	 * @return float
+	 */
     public function getTotalOwed() {
         $sql = 'select sum(owed) as totalOwed from '.$this->getFullTableName();
         $result = $this->query($sql);
         return $result[0]['totalOwed'];
 	}
 	
+	/**
+	 * 
+	 * @param int $limit
+	 * @return mixed
+	 */
 	public function getProjectStats($limit = 0) {
 		$sql = 'select accountId,sum(mag) as totalMag,count(*) as howMany from '.$this->getFullTableName().' where mag > 0 group by accountId order by totalMag desc '.($limit?'limit '.$limit:'');
 		$results = $this->query($sql);
@@ -59,6 +76,10 @@ class GrcPool_Member_Host_Credit_DAO extends GrcPool_Member_Host_Credit_MODELDAO
 		return $projects;
 	}
 	
+	/**
+	 * 
+	 * @return GrcPool_Member_Host_Credit_OBJ[]
+	 */
  	public function getOwedWithNoOwner() {
  		$sql = 'select * from '.$this->getFullTableName().' where (hostDbid,accountId) not in (select hostDbid,accountId from '.Constants::DATABASE_NAME.'.member_host_project) and owed > 0';
  		return $this->queryObjects($sql);

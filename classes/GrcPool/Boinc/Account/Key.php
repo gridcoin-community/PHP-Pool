@@ -7,7 +7,12 @@ class GrcPool_Boinc_Account_Key_OBJ extends GrcPool_Boinc_Account_Key_MODEL {
 
 class GrcPool_Boinc_Account_Key_DAO extends GrcPool_Boinc_Account_Key_MODELDAO {
 
-	public function getWithAccount($id) {
+	/**
+	 * 
+	 * @param int $id
+	 * @return NULL|GrcPool_Boinc_Account_Key_OBJ
+	 */
+	public function getWithAccount(int $id) {
 		return $this->fetch(array($this->where('accountId',$id)));
 	}
 	

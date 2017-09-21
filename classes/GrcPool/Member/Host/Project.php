@@ -7,40 +7,62 @@ class GrcPool_Member_Host_Project_OBJ extends GrcPool_Member_Host_Project_MODEL 
 
 class GrcPool_Member_Host_Project_DAO extends GrcPool_Member_Host_Project_MODELDAO {
 
-	// NOT CORRECT RETURNS MULTPLES OF HOSTS
-// 	public function getWithMemberIdAndProjectUrl($memberId,$projUrl) {
-// 		return $this->fetch(array($this->where('memberId',$memberId),$this->where('projectUrl',$projUrl)));
-// 	}
-
-	public function deleteWithMemberId($memberId) {
+	/**
+	 * 
+	 * @param int $memberId
+	 */
+	public function deleteWithMemberId(int $memberId) {
 		$sql = 'delete from '.$this->getFullTableName().' where memberId = '.$memberId;
 		$this->executeQuery($sql);
 	}
 	
 	/**
 	 * 
-	 * @param unknown $memberId
-	 * @param unknown $cpid
+	 * @param int $memberId
+	 * @param string $cpid
 	 * @return GrcPool_Member_Host_Project_OBJ[]
 	 */
-	public function getWithMemberIdAndHostCpid($memberId,$cpid) {
+	public function getWithMemberIdAndHostCpid(int $memberId,string $cpid) {
 		return $this->fetchAll(array($this->where('memberId',$memberId),$this->where('hostCpid',$cpid)));
 	}
 	
-	public function getWithMemberId($memberId) {
+	/**
+	 * 
+	 * @param int $memberId
+	 * @return GrcPool_Member_Host_Project_OBJ[]
+	 */
+	public function getWithMemberId(int $memberId) {
 		return $this->fetchAll(array($this->where('memberId',$memberId)));
 	}
 	
- 	public function getWithMemberIdAndDbidAndAccountId($memberId,$dbid,$accountId) {
+	/**
+	 * 
+	 * @param int $memberId
+	 * @param int $dbid
+	 * @param int $accountId
+	 * @return NULL|GrcPool_Member_Host_Project_OBJ
+	 */
+ 	public function getWithMemberIdAndDbidAndAccountId(int $memberId,int $dbid,int $accountId) {
  		return $this->fetch(array($this->where('memberId',$memberId),$this->where('hostDbid',$dbid),$this->where('accountId',$accountId)));
  	}
  	
- 	public function getWithMemberIdAndCpidAndAccountId($memberId,$cpid,$accountId) {
+ 	/**
+ 	 * 
+ 	 * @param int $memberId
+ 	 * @param string $cpid
+ 	 * @param int $accountId
+ 	 * @return NULL|GrcPool_Member_Host_Project_OBJ
+ 	 */
+ 	public function getWithMemberIdAndCpidAndAccountId(int $memberId,string $cpid,int $accountId) {
  		return $this->fetch(array($this->where('memberId',$memberId),$this->where('hostCpid',$cpid),$this->where('accountId',$accountId)));
  	}
  	
-	
-	public function getHostIdsWithErrors($memberId) {
+	/**
+	 * 
+	 * @param int $memberId
+	 * @return mixed[]
+	 */
+	public function getHostIdsWithErrors(int $memberId) {
 		$datas = $this->fetchAll(array($this->where('memberid',$memberId),$this->where('hostDbid',0)));
 		$ids = array();
 		foreach ($datas as $data) {
@@ -49,28 +71,52 @@ class GrcPool_Member_Host_Project_DAO extends GrcPool_Member_Host_Project_MODELD
 		return $ids;
 	}
 	
-	public function getActiveProjectForHost($hostId,$accountId) {
+	/**
+	 * 
+	 * @param int $hostId
+	 * @param int $accountId
+	 * @return NULL|GrcPool_Member_Host_Project_OBJ
+	 */
+	public function getActiveProjectForHost(int $hostId,int $accountId) {
 		return $this->fetch(array($this->where('attached',2,'!='),$this->where('hostId',$hostId),$this->where('accountId',$accountId)));
 	}
 	
-	public function getWithMemberIdAndHostId($memberId,$hostId) {
+	/**
+	 * 
+	 * @param int $memberId
+	 * @param int $hostId
+	 * @return GrcPool_Member_Host_Project_OBJ[]
+	 */
+	public function getWithMemberIdAndHostId(int $memberId,int $hostId) {
 		return $this->fetchAll(array($this->where('memberId',$memberId),$this->where('hostId',$hostId)));
 	}
 	
-	public function getWithMemberIdAndDbid($memberId,$dbId) {
+	/**
+	 * 
+	 * @param int $memberId
+	 * @param int $dbId
+	 * @return NULL|GrcPool_Member_Host_Project_OBJ
+	 */
+	public function getWithMemberIdAndDbid(int $memberId,int $dbId) {
 		return $this->fetch(array($this->where('memberId',$memberId),$this->where('hostDbid',$dbId)));
 	}
 
- 	public function getWithHostDbIdAndAccountId($hostDbId,$accountId) {
+	/**
+	 * 
+	 * @param int $hostDbId
+	 * @param int $accountId
+	 * @return GrcPool_Member_Host_Project_OBJ[]
+	 */
+ 	public function getWithHostDbIdAndAccountId(int $hostDbId,int $accountId) {
  		return $this->fetchAll(array($this->where('hostDbid',$hostDbId),$this->where('accountId',$accountId)));
  	}
 	
-// 	public function getWithHostDbIdAndAccountId($hostDbId,$projectId) {
-// 		return $this->fetchAll(array($this->where('hostDbid',$hostDbId),$this->where('projectUrl',$projectId)));
-// 	}
-	
-	
-	public function deleteWithMemberIdAndHostId($memberId,$hostId) {
+	/**
+	 * 
+	 * @param int $memberId
+	 * @param int $hostId
+	 */
+	public function deleteWithMemberIdAndHostId(int $memberId,int $hostId) {
 		$sql = 'delete from '.$this->getFullTableName().' where hostId = '.addslashes($hostId).' and memberId = '.addslashes($memberId).'';
 		$this->executeQuery($sql);
 	}
