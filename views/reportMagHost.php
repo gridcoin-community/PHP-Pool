@@ -8,7 +8,6 @@ $panelContent .= '
 		<tr>
 			<th>#</th>
 			<th>Researcher</th>
-			<th class="text-center">Pool</th>
 			<th>Computer Model</th>
 			<th class="text-right">Mag</th>
 		</tr>
@@ -20,7 +19,6 @@ foreach ($this->view->hosts as $host) {
 			<tr>
 				<td>'.$pos++.'</td>
 				<td><a href="/report/researcher/'.$host['memberId'].'/'.$host['hostId'].'">'.$host['username'].'</a></td>
-				<td class="text-center">'.$host['poolId'].'</td>
 				<td>'.
 					$host['detail']->getModel().'<br/>
 					cpus - '.$host['detail']->getNumberOfCpus().', 

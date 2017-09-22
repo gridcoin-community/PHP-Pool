@@ -8,7 +8,6 @@ $panelContent .= '
 		<tr>
 			<th>#</th>
 			<th>Researcher</th>
-			<th class="text-center">Pool</th>
 			<th>Project</th>
 			<th class="text-right">Avg Credit</th>
 			<th class="text-right">Mag</th>
@@ -21,7 +20,6 @@ foreach ($this->view->hosts as $host) {
 			<tr>
 				<td>'.$pos++.'</td>
 				<td><a href="/report/researcher/'.$host->getMemberId().'/'.$host->getHostId().'">'.$host->getUsername().'</a></td>
-				<td class="text-center">'.$host->getPoolId().'</td>
 				<td>'.$this->view->accounts[$host->getAccountId()]->getName().'</td>
 				<td class="text-right">'.$host->getAvgCredit().'</td>
 				<td class="text-right">'.number_format($host->getMag(),2).'</td>

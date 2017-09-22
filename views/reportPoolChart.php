@@ -1,6 +1,5 @@
 <?php
 $webPage->appendTitle('Pool Charts');
-$numberOfPools = Property::getValueFor(Constants::PROPERTY_NUMBER_OF_POOLS);
 
 $webPage->append('
 	<div style="background-color:white;">
