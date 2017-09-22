@@ -58,6 +58,7 @@ echo 'INFO: Hot Wallet Available Balance: '.$availableBalance."\n";
 $owes = $viewDao->getOwed();
 if (!$owes) {
 	echo 'INFO: No Owes '."\n";
+GrcPool_Task_Helper::runPayoutTasks();
 	exit;
 }
 	
@@ -163,5 +164,7 @@ $totalPaid = $payoutDao->getTotalAmount();
 if ($totalPaid) {
 	$settingsDao->setValueWithName(Constants::SETTINGS_TOTAL_PAID_OUT,$totalPaid);
 }
+
+GrcPool_Task_Helper::runPayoutTasks();
 
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DOPAYOUT END ".date("Y.m.d H.i.s")."\n";

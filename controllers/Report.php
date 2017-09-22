@@ -38,26 +38,25 @@ class GrcPool_Controller_Report extends GrcPool_Controller {
 	}
 	
 	public function earnDonationAction() {
-		$dao = new GrcPool_Member_Payout_DAO();
-		$this->view->members = $dao->getTopDonators(100);
+		$cache = new Cache();
+		$this->view->members = $cache->get(Constants::CACHE_REPORT_EARNDONATE);
 	}
 	
 	public function earnTopAction() {
-		$dao = new GrcPool_Member_Payout_DAO();
-		$this->view->members = $dao->getTopEarners(100);
-		$this->view->totalGrc = $dao->getTotalAmount();
+		$cache = new Cache();
+		$data = $cache->get(Constants::CACHE_REPORT_EARNTOP);
+		$this->view->members = $data['members'];
+		$this->view->totalGrc = $data['totalGrc'];
 	}
 	
 	public function magAccountAction() {
-		$dao = new GrcPool_View_Member_Host_Project_Credit_DAO();
-		$this->view->hosts = $dao->getTopAccounts(100);
+		$cache = new Cache();
+		$this->view->hosts = $cache->get(Constants::CACHE_REPORT_MAGACCOUNT);
 	}
 	
 	public function magProjectHostAction() {
-		$accountDao = new GrcPool_Boinc_Account_DAO();
-		$this->view->accounts = $accountDao->fetchAll();
-		$dao = new GrcPool_View_Member_Host_Project_Credit_DAO();
-		$this->view->hosts = $dao->fetchAll(array(),array('mag'=>'desc'),100);
+		$cache = new Cache();
+		$this->view->hosts = $cache->get(Constants::CACHE_REPORT_PROJECTHOST);
 	}
 	
 	public function researcherAction() {
@@ -84,17 +83,8 @@ class GrcPool_Controller_Report extends GrcPool_Controller {
 	}
 	
 	public function magHostAction() {
-		$dao = new GrcPool_View_Member_Host_Project_Credit_DAO();
-		$this->view->hosts = $dao->getTopHosts(100);
-		$hostDao = new GrcPool_Member_Host_DAO();
-		$keys = array();
-		$projects = array();
-		foreach ($this->view->hosts as $host) {
-			$keys[$host['hostId']] = $host;
-		}
-		$hostDetails = $hostDao->initWithKeys(array_keys($keys));
-		foreach ($this->view->hosts as $idx => $host) {
-			$this->view->hosts[$idx]['detail'] = $hostDetails[$host['hostId']];
-		}
+		$cache = new Cache();
+		$this->view->hosts = $cache->get(Constants::CACHE_REPORT_HOSTMAG);
 	}
+
 }

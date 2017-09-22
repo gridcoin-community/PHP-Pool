@@ -156,3 +156,5 @@ foreach ($projects as $project) {
 	}
 	echo 'Number of hosts for project: '.$hostCount."\n";
 }
+
+GrcPool_Task_Helper::runCreditUpdateTasks();
