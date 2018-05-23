@@ -6,7 +6,7 @@ class GridcoinDaemon {
 	private $path = '';
 
 	private function executeDaemon($cmd) {
-		$command = $this->path.' '.($this->testnet?'-testnet':'').' -datadir='.$this->datadir.' '.$cmd;
+		$command = $this->path.' '.($this->testnet?'-testnet':'').' '.($this->datadir!=''?'-datadir='.$this->datadir.' ':'').''.$cmd;
 		$stdout = $stderr = $status = null;
 		$descriptorspec = array(
 				1 => array('pipe', 'w'),
@@ -70,11 +70,15 @@ class GridcoinDaemon {
 	}
 	
 	public function getBlockHeight() {
-		return $this->executeDaemon('getblockcount');
+		return trim($this->executeDaemon('getblockcount'));
 	}
 	
-	public function getRsa() {
-		$data = $this->executeDaemon('list rsa');
+	public function getRsa($cpid = '') {
+		if ($cpid == '') {
+			$data = $this->executeDaemon('list rsa');
+		} else {
+			$data = $this->executeDaemon('list magnitude '.$cpid);
+		}
 		$json = json_decode($data,true);
 		return $json;
 	}
@@ -112,11 +116,21 @@ class GridcoinDaemon {
 		return trim($data);
 	}
 	
-	public function getTotalInterest() {
-		$data = $this->executeDaemon('list rsa');
-		$json = json_decode($data,true);
-		$interest = isset($json[1]['CPID Lifetime Interest Paid'])?$json[1]['CPID Lifetime Interest Paid']:0;
+	public function getTotalInterest($cpid = '') {
+		$data = $this->getRsa($cpid);
+		$interest = isset($data[1]['CPID Lifetime Interest Paid'])?$data[1]['CPID Lifetime Interest Paid']:0;
 		return $interest;
+	}
+	
+	public function getMoneySupply() {
+		$info = $this->getInfo();
+		return $info['moneysupply'];
+	}
+	
+	public function getInfo() {
+		$data = $this->executeDaemon('getinfo');
+		$json = json_decode($data,true);
+		return $json;
 	}
 	
 	public function getTotalBalance() {
@@ -139,12 +153,11 @@ class GridcoinDaemon {
 //		return $json;
 //	}
 	
-	public function getMagnitude() {
-		$data = $this->executeDaemon('list mymagnitude');
-		$json = json_decode($data,true);
+	public function getMagnitude($cpid = '') {
+		$data = $this->getRsa($cpid);
 		$mag = 0;
-		if (isset($json[1]) && isset($json[1]['Magnitude (Last Superblock)'])) {
-			$mag = $json[1]['Magnitude (Last Superblock)'];
+		if (isset($data[1]) && isset($data[1]['Magnitude (Last Superblock)'])) {
+			$mag = $data[1]['Magnitude (Last Superblock)'];
 		}
 		return trim($mag);
 	}
@@ -162,6 +175,10 @@ class GridcoinDaemon {
 		return $this->executeDaemon('getblockhash '.$block);
 	}
 	
+	public function getBlock($blockHash) {
+		return json_decode($this->executeDaemon('getblock '.$blockHash),true);
+	}
+	
 	public function getWhitelistedProjects($block = '') {
 		if ($block == '') {
 			$data = $this->getSuperBlockAge();
@@ -170,7 +187,7 @@ class GridcoinDaemon {
 		if ($block == '') return;
 		$blockHash = $this->getBlockHash($block);
 		if ($blockHash == '') return;
-		$blockData = json_decode($this->executeDaemon('getblock '.$blockHash),true);
+		$blockData = $this->getBlock($blockHash);
 		if ($blockData['IsSuperBlock'] == '') return;
 		$txHash = $blockData['tx'][0];
 		$txJson = $this->executeDaemon('gettransaction '.$txHash);

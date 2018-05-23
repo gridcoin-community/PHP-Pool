@@ -34,8 +34,8 @@ if ($this->view->memHosts) {
 						<a href="#" data-toggle="tooltip" title="MAG = '.Constants::GRC_MAG_MULTIPLIER.' * ( ( HRAC / TRAC ) / W )"><i style="color:black;" class="fa fa-info-circle"></i></a>			
 					</th>
 					<th class="text-right">
-						Daily GRC
-						<a href="#" data-toggle="tooltip" title="GRC = MAG * '.$this->view->magUnit.'"><i style="color:black;" class="fa fa-info-circle"></i></a>
+						Daily '.Constants::CURRENCY_ABBREV.'
+						<a href="#" data-toggle="tooltip" title="'.Constants::CURRENCY_ABBREV.' = MAG * '.$this->view->magUnit.'"><i style="color:black;" class="fa fa-info-circle"></i></a>
 					</th>
 				</tr>
 			</thead>
@@ -113,7 +113,7 @@ if ($this->view->memHosts) {
 						<i class="fa fa-chevron-down"></i>
 						<span class="badge">'.$numberOfProjects.'</span>
 					</button>
-					<strong><a title="grcpool.com host details" href="/account/host/'.$hostId.'">'.$hostName.'</a></strong>
+					<strong><a title="'.Constants::BOINC_POOL_NAME.' host details" href="/account/host/'.$hostId.'">'.$hostName.'</a></strong>
 					'.(isset($this->view->errorHosts[$hostId])?'
 						<a href="#" data-toggle="tooltip" title="This host possibly has an invalid project attached."><i style="color:darkred;" class="fa fa-warning"></i></a>										
 					':'').'		
@@ -147,13 +147,14 @@ if ($this->view->memHosts) {
 		'.($haveProjs?'':Bootstrap_Callout::info('Please allow at least 24 hours after you have completed tasks for credit to appear. After tasks are completed, the project site needs to validate and update its statistics. The pool checks with projects several times per day to get credit.')).'	
 		'.($this->view->hasDeleteNotice?'':Bootstrap_Callout::error('
 			<b>Project and Host Deletion is Disabled</b><br/>
-			If you delete a project that has average credit and is generating a magnitude, even if you are no longer researching on it, you will not receive any future Gridcoin for that particular project since the pool will be unaware of the host/project.	
+			If you delete a project that has average credit and is generating a magnitude, even if you are no longer researching on it, 
+			your project will still accumalate '.Constants::CURRENCY_ABBREV.'. This project should fall to an orphan state which has different payout rules.	
 			Also you may want to double check your BOINC client to be sure any projects being deleted are detached.<br/><br/>
 			<div class=""><a href="/account/hosts/enableDelete" class="btn btn-danger">I understand, enable delete options please...</a></div>
 		')).'						
 	';
 } else {
-	$content .= 'You have not attached any hosts to grcpool.com';
+	$content .= 'You have not attached any hosts to '.Constants::BOINC_POOL_NAME.'';
 }
 
 $panel = new Bootstrap_Panel();

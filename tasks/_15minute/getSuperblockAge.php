@@ -21,6 +21,10 @@ $superblockData = new SuperBlockData($cache->get(Constants::CACHE_SUPERBLOCK_DAT
 $hostDao = new GrcPool_Member_Host_Credit_DAO();
 
 $result = $daemon->getSuperBlockAge();
+if (!isset($result['timestamp']) || $result['timestamp'] == '') {
+	echo "WALLET DOWN";
+	exit;
+}
 $superblockData->timestamp = $result['timestamp'];
 $superblockData->age = $result['age'];
 $superblockData->pending = $result['pending'];

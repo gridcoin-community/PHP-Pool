@@ -43,7 +43,7 @@ $form->addField($input);
 $input = new Bootstrap_StaticInput();
 $input->setInputSize(8);
 $input->setDefault('
-	<em>When you used BOINC to add grcpool as an account manager, you used your username and password to make the connection. 
+	<em>When you used BOINC to add '.Constants::BOINC_POOL_NAME.' as an account manager, you used your username and password to make the connection. 
 	BOINC has stored your password internally which allows it to contact the pool without you needing to enter your password every time.
 	If you are just trying to reset your password for the website, you have the option only changing it for the website login and not BOINC.
 	This will allow BOINC to continue operating as it has. If you need to change the password for both of them, you will need to reconnect

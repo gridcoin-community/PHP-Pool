@@ -2,15 +2,11 @@
 $webPage->appendHead("<script src='https://www.google.com/recaptcha/api.js'></script>");
 $webPage->setPageTitle('Pool Registration');
 
-$webPage->append('
-	'.Bootstrap_Callout::error('
-		THIS POOL IS FOR TESTING ONLY. YOU SHOULD NOT SIGN UP FOR THIS POOL. PLEASE VISIT https://www.grcpool.com TO SIGNUP FOR GRIDCOIN POOL.
-	').'
-
-	'.Bootstrap_Callout::info('
-	Please take a moment to read how this pool\'s <a href="/about/fees">fees</a>, <a href="/about/calculations">calculations</a>, and <a href="/about/hotWallet">staking wallet</a> works.
-	').'	
-');
+// $webPage->append('
+// 	'.Bootstrap_Callout::info('
+// 		Please take a moment to read how this pool\'s <a href="/about/fees">fees</a>, <a href="/about/calculations">calculations</a>, and <a href="/about/hotWallet">staking wallet</a> works.
+// 	').'	
+// ');
 
 $form = new Bootstrap_Form();
 $form->setOnSubmit('return submitSignup();');

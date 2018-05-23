@@ -8,7 +8,7 @@ $hostDao = new GrcPool_Member_Host_Credit_DAO();
 $sql = '
   	insert into '.Constants::DATABASE_NAME.'.member_host_stat_mag (memberId,hostId,accountId,thetime,mag,avgCredit) 
   	select memberId,hostDbid,accountId,UNIX_TIMESTAMP(NOW()),mag,avgCredit
-  	from grcpool.view_member_host_project_credit 
+  	from '.Constants::DATABASE_NAME.'.view_member_host_project_credit 
   	where avgCredit > 0 or mag > 0
 ';
 $hostDao->executeQuery($sql);

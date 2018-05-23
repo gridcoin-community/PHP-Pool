@@ -5,6 +5,9 @@ class Constants {
 	const DATABASE_SERVER = '127.0.0.1';
 	const BOINC_XML_LOG_DIR = '/backup/poolLogs';
 	const BOINC_POOL_NAME = 'grcpool.com';
+	const POOL_DOMAIN = 'www.grcpool.com';
+	const CURRENCY_ABBREV = 'GRC';
+	const CURRENCY_NAME = 'Gridcoin';
 	
 	const ADMIN_EMAIL_ADDRESS = 'admin@grcpool.com';
 	
@@ -39,6 +42,8 @@ e73144ac178b785f677e320166041f165e777160ceaea2952f5ee4914c875d7b
 	
 	const PAYOUT_LOCK_FILE = '/var/www/open.grcpool.com/tasks/payout.lock';
 
+	const SETTINGS_PROFIT_WITHDRAWN = 'PROFIT_WITHDRAWN';
+	const SETTINGS_WALLET_MODE = 'WALLET_MODE';
 	const SETTINGS_TOTAL_PAID_OUT = "TOTAL_PAID_OUT";
 	const SETTINGS_CPID = 'CPID';
 	const SETTINGS_MIN_OWE_PAYOUT = 'MIN_OWE_PAYOUT';
@@ -47,16 +52,18 @@ e73144ac178b785f677e320166041f165e777160ceaea2952f5ee4914c875d7b
 	const SETTINGS_MIN_ORPHAN_PAYOUT_WITH_MAG = 'MIN_ORPHAN_PAYOUT_WITH_MAG';
 	const SETTINGS_SEED = 'SEED';
 	const SETTINGS_GRC_CLIENT_ONLINE = 'GRC_CLIENT_ONLINE';
-	const SETTINGS_GRC_CLIENT_MESSAGE = 'GRC_CLIENT_MESSAGE';
+	const SETTINGS_GRC_MESSAGE = 'GRC_MESSAGE';
 	const SETTINGS_MIN_STAKE_BALANCE = 'MIN_STAKE_BALANCE';
 	const SETTINGS_HOT_WALLET_ADDRESS = 'HOT_WALLET_ADDRESS';
 	const SETTINGS_GRC_DONATION_ADDRESS = 'GRC_DONATION_ADDRESS';
 	const SETTINGS_POOL_WHITELIST_COUNT = 'POOL_WHITELIST_COUNT';
 	
-	const PAYOUT_ERROR_NO_GRC_ADDR = 'No GRC Address';
+	const PAYOUT_ERROR_NO_GRC_ADDR = 'No Address';
 	const PAYOUT_ERROR_MIN_NOT_MET = 'Minimum owed payout not met';
 	const PAYOUT_ERROR_NO_MIN_AMOUNT = 'No minimum specified';
 	const PAYOUT_ERROR_MIN_CALC_AMOUNT_NOT_MET = 'Mimimum calculated amount to send not met';
 	
+	const GRCNAME_WORLD_COMMUNITY_GRID = 'world community grid';
+	const GRCNAME_SETI = 'seti@home';
 }
 	

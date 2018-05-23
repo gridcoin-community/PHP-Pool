@@ -217,7 +217,7 @@ class GrcPool_Controller_Account extends GrcPool_Controller {
 			$charCheck = $newAddr==''||ctype_alnum($newAddr)?$newAddr:null;
 			$message = '';
 			if ($charCheck === null) {
-				$this->addErrorMsg('The GRC Address you entered has inappropriate characters.');
+				$this->addErrorMsg('The '.Constants::CURRENCY_ABBREV.' Address you entered has inappropriate characters.');
 			} else {
 				$authCheck = UserHelper::authenticate($this->getUser(),$this->post('password'));
 				if (!$authCheck) {
@@ -225,18 +225,18 @@ class GrcPool_Controller_Account extends GrcPool_Controller {
 				} else {
 					$daemon = GrcPool_Utils::getDaemonForPool();
 					if ($newAddr != '' && !$daemon->isAddress($newAddr)) {
-						$this->addErrorMsg('GRC Address was not formatted properly.');
+						$this->addErrorMsg(''.Constants::CURRENCY_ABBREV.' Address was not formatted properly.');
 					} else {
 						$usrDao = new GrcPool_Member_DAO();
 						$this->getUser()->setGrcAddress($newAddr);
 						$usr = $this->getUser();
 						$usrDao->save($usr);
-						$this->addSuccessMsg('GRC Address is updated');
+						$this->addSuccessMsg(''.Constants::CURRENCY_ABBREV.' Address is updated');
 						$email = new Email();
 						$email->addFrom(Constants::ADMIN_EMAIL_ADDRESS);
 						$email->addTo($this->getUser()->getEmail());
-						$email->setSubject(Constants::BOINC_POOL_NAME.' GRC Payout Address Changed');
-						$email->setMessage('The GRC payout address on your '.Constants::BOINC_POOL_NAME.' account was changed.<br/><br/>Sincerely, your friendly GRC pool...');
+						$email->setSubject(Constants::BOINC_POOL_NAME.' '.Constants::CURRENCY_ABBREV.' Payout Address Changed');
+						$email->setMessage('The '.Constants::CURRENCY_ABBREV.' payout address on your '.Constants::BOINC_POOL_NAME.' account was changed.<br/><br/>Sincerely, your friendly '.Constants::CURRENCY_ABBREV.' pool...');
 						try {
 							$email->send();
 						} catch(Exception $e) {
@@ -252,7 +252,7 @@ class GrcPool_Controller_Account extends GrcPool_Controller {
 				$this->getUser()->setMinPayout(floor($input));
 				$usr = $this->getUser();
 				$usrDao->save($usr);
-				$this->addSuccessMsg('GRC Minimum Payout is Updated');
+				$this->addSuccessMsg(''.Constants::CURRENCY_ABBREV.' Minimum Payout is Updated');
 			} else {
 				$this->addErrorMsg('The Minimum Payout update Failed, check your values and try again.');
 			}

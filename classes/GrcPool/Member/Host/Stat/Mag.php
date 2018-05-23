@@ -35,4 +35,21 @@ class GrcPool_Member_Host_Stat_Mag_DAO extends GrcPool_Member_Host_Stat_Mag_MODE
 	public function getMagDataWithMemberId(int $memberId,int $since = 0) {
 		return $this->fetchAll(array($this->where('memberId',$memberId),$this->where('thetime',$since,'>='),$this->where('mag',0,'>')),array('accountId'=>'asc','thetime'=>'asc'));
 	}
+	
+	public function getMagStatsWithMemberId($grouping,$memberId,$since) {
+		$group = 'date';
+		switch ($grouping) {
+			case 'week' : $group = 'yearweek';break;
+		}
+		$sql = '
+			select 	sum(mag) as mag,
+					'.$group.'(FROM_UNIXTIME(theTime)) as theTime
+			from	'.$this->getFullTableName().'
+			where	memberId = \''.$memberId.'\'
+			and		theTime > '.$since.'
+			GROUP BY '.$group.'(FROM_UNIXTIME(theTIme))
+			order by theTime
+		';
+		return $this->query($sql);
+	}
 }

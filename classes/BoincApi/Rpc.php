@@ -13,12 +13,13 @@ class BoincApi_Rpc {
 	private $rawDomainName = '';
 	private $log;
 	private $attachedProjects;
+	private $attachedProjectsUrl;
 
 	public function getRawName() {
 		$pos1 = strpos($this->rawXml,'<name>');
 		$pos2 = strpos($this->rawXml,'</name>');
 		$rawName = substr($this->rawXml,$pos1+6,$pos2-$pos1-6);
-		if (strlen($rawName > 50)) {
+		if (strlen($rawName) > 50) {
 			return 'unknown';
 		}
 		return preg_replace( '/[^a-z0-9]+/', '-', strtolower( $rawName ) );
@@ -46,6 +47,7 @@ class BoincApi_Rpc {
 		$this->rawName = $this->getRawName();
 		$this->rawDomainName = $this->getRawDomainName();
 		$this->attachedProjects = array();
+		$this->attachedProjectsUrl = array();
 		try {
 			libxml_use_internal_errors(true);	
 			$this->xml = simplexml_load_string($xml);
@@ -70,7 +72,7 @@ class BoincApi_Rpc {
 	 					}
 	 					$this->error = 'BOINC may be submitting invalid data. [1]';
 	 					if ($log) {
-	 	    				file_put_contents(Constants::BOINC_XML_LOG_DIR.'/'.$this->rawName.'.'.time().'.'.$this->rawDomainName.'.error.in.xml',$error."\n\n".'----------------------------'.$xml.'-------------------------------');
+	 						$this->logIt($error."\n\n".'----------------------------'.$xml.'-------------------------------','error.in',true);
 	 					}
  					}
  				}
@@ -78,11 +80,27 @@ class BoincApi_Rpc {
 		} catch (Throwable $t) {
 			$this->error = 'BOINC may be submitting invalid data. [2]';
 			if ($log) {
-				file_put_contents(Constants::BOINC_XML_LOG_DIR.'/'.$this->rawName.'.'.time().'.'.$this->rawDomainName.'.error.in.xml',$xml);
+				$this->logIt($xml,'error.in');
 			}
 		}
 		if ($log) {
-			file_put_contents(Constants::BOINC_XML_LOG_DIR.'/'.$this->rawName.'.'.time().'.'.$this->rawDomainName.'.in.xml',$xml);
+			$this->logIt($xml,'in');
+		}
+	}
+	
+	private function logIt($message,$req = 'in') {
+		try {
+			if (trim($this->rawName) == '') {
+				return;
+			}
+			$subDir = substr($this->rawName,0,1);
+			if (!is_dir(Constants::BOINC_XML_LOG_DIR.'/'.$subDir)) {
+				mkdir(Constants::BOINC_XML_LOG_DIR.'/'.$subDir);
+			}
+			$dir = 	Constants::BOINC_XML_LOG_DIR.'/'.$subDir.'/'.$this->rawName.'.'.time().'.'.$this->rawDomainName.'.'.$req.'.xml';
+			file_put_contents($dir,$message);
+		} catch (Throwable $t) {
+			error_log($t);
 		}
 	}
 	
@@ -97,7 +115,9 @@ class BoincApi_Rpc {
 		$urlDao = new GrcPool_Boinc_Account_Url_DAO();
 		$creditDao = new GrcPool_Member_Host_Credit_DAO();
 		$keyDao = new GrcPool_Boinc_Account_Key_DAO();
-		$this->member = $dao->initWithUsername((String)$this->xml->name);
+		if (trim((String)$this->xml->name) != '') {
+			$this->member = $dao->initWithUsername((String)$this->xml->name);
+		}
 		$this->memberValid = $this->member==null?false:$this->member->getPasswordHash()==(String)$this->xml->password_hash;
 		
 		if ($this->memberValid) {
@@ -126,7 +146,6 @@ class BoincApi_Rpc {
 					if ($urlObj) {
 						$testProj = $projectDao->getWithMemberIdAndDbidAndAccountId($this->member->getId(),(String)$this->xml->project->hostid,$urlObj->getAccountId());
 						if ($testProj != null) {
-							if ($echo) echo "FOUND HOST WITH PROJECT DBID AND URL\n";
 							$this->host = $hostDao->initWithKey($testProj->getHostId());
 						}
 					}
@@ -214,18 +233,25 @@ class BoincApi_Rpc {
 	 						// I would have liked to add the project if they sere using the weak key here, but could open up security problems if any dbid was accpeted
 	 						// so lets restrict projects being added only from account pages
 	 						$this->error .= $account->getName().' is not in your pool account, but was found in your client.';
-	 						if ($echo) echo "CREATED NEW PROJECT FOR HOST\n";
 	 						continue;
 	 					} else {
+	 						if ($dbid == 0) {
+	 							$this->error .= $account->getName().' does not have a valid ID from the project site. Please try updating the project in your BOINC client.';
+	 							continue;
+	 						}
 	 						if ($obj->getHostDbid() != 0) {
-	 							$this->error .= $account->getName().' a host appears to already have project in pool. Might be a MAC Address problem. You may need to contact support '.Constants::ADMIN_EMAIL_ADDRESS.' for help.';
+	 							$testDbid = $hostProjectDao->getWithHostDbIdAndAccountId($dbid,$account->getId());
+	 							if ($testDbid && count($testDbid) > 0) {
+	 								$this->error .= $account->getName().'  appears to already have a host in the pool. Usually this is a MAC address problem. You may need to contact support '.Constants::ADMIN_EMAIL_ADDRESS.' for help.';
+	 							} else {
+	 								$this->error .= $account->getName().'  You may have a new ID from the project. You can try deleting the project from the pool and adding it back in. Contact support '.Constants::ADMIN_EMAIL_ADDRESS.' for more help.';
+	 							}
 	 							continue;	
 	 						}
-	 						if ($echo) echo "FOUND PROJECT WITH CPID\n";
 	 					}
 	 				} else {
 	 					$this->attachedProjects[$account->getId()] = 1;
-	 					if ($echo) echo "FOUND PROJECT WITH DBID\n";
+	 					$this->attachedProjectsUrl[$account->getId()] = $urlObj;
 	 				}
 	 				if ($obj->getHostDbid() != $dbid) {
 	 					// dbid changing, so lets validate it is not duplicate
@@ -290,7 +316,7 @@ class BoincApi_Rpc {
 			<message>'.$msg.'</message><error>'.$msg.'</error>
 			</acct_mgr_reply>';
 		if ($this->log) {
-			file_put_contents(Constants::BOINC_XML_LOG_DIR.'/'.$this->rawName.'.'.time().'.'.$this->rawDomainName.'.error.out.xml',$xml);
+			$this->logIt($xml,'error.out');
 		}
 		return $xml;
 	}
@@ -343,8 +369,12 @@ class BoincApi_Rpc {
 					
 					$acct = new BoincApi_Account();
 					
-					// NEED TO FIX THIS LATER FOR URL UPDATING CHANGES
-					$urlObj = $urlDao->initWithKey($account->getUrlId());
+					$urlObj = null;
+					if (isset($this->attachedProjectsUrl[$account->getId()])) {
+						$urlObj = $this->attachedProjectsUrl[$account->getId()]; // use what is already in client
+					} else {
+						$urlObj = $urlDao->initWithKey($account->getUrlId());
+					}
 					$acct->setUrl($urlObj->getUrl());
 					$acct->setNo_ati($hostProject->getNoAtiGpu()|null);
 					$acct->setNo_cpu($hostProject->getNoCpu()|null);
@@ -362,12 +392,9 @@ class BoincApi_Rpc {
 		} else {
 			$xml .= '<message>Authorization Failed</message><error>Authorization Failed</error>';			
 		}
-		$xml .= '</acct_mgr_reply>';
-		
-		//$xml = file_get_contents(dirname(__FILE__).'/../../test/data/Exikutioner.1493218818.out.xml');
-		
+		$xml .= '</acct_mgr_reply>';		
 		if ($this->log) {
-			file_put_contents(Constants::BOINC_XML_LOG_DIR.'/'.$this->rawName.'.'.time().'.'.$this->rawDomainName.'.out.xml',$xml);
+			$this->logIt($xml,'out');
 		}
 		return $xml;
 	}

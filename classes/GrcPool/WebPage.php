@@ -1,8 +1,8 @@
 <?php
 class GrcPool_WebPage {
 	public $title;
-	public $metaKeywords = 'gridcoin, pool, mining, boinc, science, research, cryptocurrency';
-	public $metaDescription = 'This is a Gridcoin Research Mining Pool. Join the pool, crunch, and earn Gridcoin!';
+	public $metaKeywords = Constants::CURRENCY_NAME.', pool, mining, boinc, science, research, cryptocurrency';
+	public $metaDescription = 'This is a '.Constants::CURRENCY_NAME.' Research Mining Pool. Join the pool, crunch, and earn '.Constants::CURRENCY_ABBREV.'!';
 	public $pageTitle;
 
 	private $head = '';
@@ -81,11 +81,21 @@ class GrcPool_WebPage {
 		';
 	}
 
+	private function getBanner() {
+		$settingsDao = new GrcPool_Settings_DAO();
+		$message = $settingsDao->getValueWithName(Constants::SETTINGS_GRC_MESSAGE);
+		$return = '';
+		if ($message != '') {
+			$return .= '<div style="padding:11px;color:white;font-weight:bold;background-color:#333;text-align:center;">'.$message.'</div>';
+		}
+		return $return;
+	}
+	
 	public function display() {
 		echo '<!DOCTYPE html>
  		<html>
  			<head>
- 				<title>Gridcoin Pool '.$this->title.'</title>
+ 				<title>'.Constants::CURRENCY_NAME.' Pool '.$this->title.'</title>
  				<meta name="keywords" content="'.htmlspecialchars($this->metaKeywords).'"/>
  				<meta name="description" content="'.htmlspecialchars($this->metaDescription).'"/>
  				<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -94,7 +104,7 @@ class GrcPool_WebPage {
 				<link rel="icon" href="/favicon.ico?20170214" type="image/x-icon"> 
 				<link rel="stylesheet" href="/assets/libs/bootstrap/3.3.5/css/bootstrap.min.css"/>
 				<link rel="stylesheet" href="/assets/libs/fontAwesome/4.6.3/css/font-awesome.min.css"/>
-				<link rel="stylesheet" href="/assets/css/grcpool.css?20170714"/>	
+				<link rel="stylesheet" href="/assets/css/pool.css?20170714"/>	
 				<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 				<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
 				<link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
@@ -103,17 +113,17 @@ class GrcPool_WebPage {
 				<meta name="theme-color" content="#ffffff">
 				<link href="https://fonts.googleapis.com/css?family=Exo+2" rel="stylesheet">
 				<meta name="msapplication-TileImage" content="/ms-icon-144x144.png?20170214">
-				<meta property="og:description" content="This is a mining pool for the cryptocurrency Gridcoin."/>
-				<meta property="og:title" content="grcpool.com"/>
-				<meta property="og:url" content="https://www.grcpool.com"/>
-				<meta property="og:site_name" content="grcpool.com"/>
+				<meta property="og:description" content="This is a mining pool for the cryptocurrency '.Constants::CURRENCY_NAME.'."/>
+				<meta property="og:title" content="'.Constants::BOINC_POOL_NAME.'"/>
+				<meta property="og:url" content="https://'.Constants::POOL_DOMAIN.'"/>
+				<meta property="og:site_name" content="'.Constants::BOINC_POOL_NAME.'"/>
 				<meta property="og:type" content="website"/>
-				<!--<meta property="fb:admins" content=""/>-->
-				<meta property="og:image" content="https://www.grcpool.com/assets/images/gpLogo1200.png"/>
+				<meta property="og:image" content="https://www.'.strtolower(Constants::CURRENCY_ABBREV).'pool.com/assets/images/'.strtolower(Constants::CURRENCY_ABBREV).'pool.png"/>
  				'.$this->head.'
 				<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
  			</head>
  			<body>
+				'.($this->getBanner()).'
 				'.($this->isHome?'<div style="background-repeat:no-repeat;background-image:url(/assets/images/pool.jpg)">':'').'
 	 				'.$this->getUserBar().'
 		 			<div class="container" style="margin-bottom:20px;">
@@ -126,9 +136,8 @@ class GrcPool_WebPage {
 			       						<span class="icon-bar"></span>
 			       						<span class="icon-bar"></span>
 			     						</button>
-										<a href="/" class="navbar-left"><img style="width:35px;height:35px;margin-top:7px;margin-right:5px;" src="/assets/images/gpLogo.png"></a>
 			     						<a class="navbar-brand" href="/">
-	 										<span style="color:white;">grcpool</span></span>
+	 										<span style="color:white;">'.strtolower(Constants::CURRENCY_ABBREV).'pool</span></span>
 	 									</a>
 			   					</div>
 			   					<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -175,7 +184,7 @@ class GrcPool_WebPage {
 	 			<div class="container">
 					'.($this->isHome?$this->body:'').'
  					<hr/>
- 					<div class="pull-right" style="margin-left:50px;"><a href="mailto:admin@grcpool.com">admin@grcpool.com</a></div>
+ 					<div class="pull-right" style="margin-left:50px;"><a href="mailto:admin@'.strtolower(Constants::CURRENCY_ABBREV).'pool.com">admin@'.strtolower(Constants::CURRENCY_ABBREV).'pool.com</a></div>
  					<span style="white-space: nowrap;"><a href="http://www.gridcoin.us/">Gridcoin Website</a> |</span>
  					<span style="white-space: nowrap;"><a href="http://www.gridresearchcorp.com/gridcoin/">Gridcoin Block Explorer</a> |</span>
  					<span style="white-space: nowrap;"><a href="https://kiwiirc.com/client/irc.freenode.net:6667/#gridcoin-help">Gridcoin Help Chat</a> |</span>

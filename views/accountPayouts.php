@@ -13,7 +13,6 @@ if ($this->view->owed) {
 			<tr>
 				<th>Project</th>
 				<th>Host</th>
-				<th class="text-center">Pool</th>
 				<th>Calculation</th>			
 				<th style="text-align:right;">Avg Credit</th>
 				<th style="text-align:right;">
@@ -36,7 +35,6 @@ if ($this->view->owed) {
 				<tr>
 					<td>'.$this->view->accounts[$owe->getAccountId()]->getName().'</td>
 					<td>'.$this->view->hosts[$owe->getHostId()]->getHostName().'</td>
-					<td class="text-center">'.$owe->getProjectPoolId().'</td>
 					<td><small>'.str_replace('+','+<br/>',substr($owe->getOwedCalc(),1)).'</small></td>				
 					<td style="text-align:right;">'.$owe->getAvgCredit().'</td>
 					<td style="text-align:right;">'.$owe->getMag().'</td>
@@ -48,7 +46,6 @@ if ($this->view->owed) {
 	$content .= '<tr style="backgrounc-color:#ccc;">
 		<tr>
 			<td style="background-color:#ccc;"><strong>Totals</td>
-			<td style="background-color:#ccc;"></td>
 			<td style="background-color:#ccc;"></td>
 			<td style="background-color:#ccc;"></td>
 			<td style="background-color:#ccc;"></td>
@@ -72,11 +69,10 @@ $content = '';
 if ($this->view->payouts) {
 	$content .= '
 		<div class="pull-right">'.$this->view->pagination.'</div>
-		<div class="rowpad"><strong>'.$this->view->numberOfPayouts.' Payouts for '.$this->view->payoutTotal.' GRC</strong></div>
+		<div class="rowpad"><strong>'.$this->view->numberOfPayouts.' Payouts for '.$this->view->payoutTotal.' '.Constants::CURRENCY_ABBREV.'</strong></div>
 		<table class="table table-striped table-hover table-condensed">
 			<tr>
 				<th>When</th>
-				<th class="text-center">Pool</th>
 				<th>Transaction</th>
 				<th>Calculation</th>
 				<th style="text-align:right;">Total Amount</th>
@@ -89,7 +85,6 @@ if ($this->view->payouts) {
 		$content .= '
 			<tr>
 				<td>'.date('Y-m-d H:i:s',$payout->getTheTime()).'<br/><small>'.Utils::getTimeAgo($payout->getTheTime()).'</small></td>
-				<td class="text-center">'.$payout->getPoolId().'</td>
 				<td><a href="http://www.gridresearchcorp.com/gridcoin/?transaction_detail&txid='.$payout->getTx().'">'.substr($payout->getTx(),0,10).'...</a></td>
 				<td><small>'.GrcPool_Utils::displayCalculation($payout->getCalculation()).'</small></td>
 				<td style="text-align:right;">'.$payout->getAmount().'</td>

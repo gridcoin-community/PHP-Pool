@@ -50,9 +50,9 @@ $payoutPanel->setContent('
 			'.($this->getUser()->getGrcAddress()!=''?'
 				<i class="text-success fa fa-check"></i>
 			':'
-				<i title="please enter a grc payout address" data-placement="right" class="bs-tooltip text-danger fa fa-warning"></i>').
+				<i title="please enter a payout address" data-placement="right" class="bs-tooltip text-danger fa fa-warning"></i>').
 			'
-			GRC Address: <a href="/account/payoutAddress">
+			'.Constants::CURRENCY_ABBREV.' Address: <a href="/account/payoutAddress">
 			'.($this->getUser()->getGrcAddress()!=''?
 				$this->getUser()->getGrcAddress():
 				'set my address'
@@ -61,7 +61,7 @@ $payoutPanel->setContent('
 		
 		<div style="margin-bottom:8px;">
 			<i class="fa fa-bank"></i>
-			Owed: <a href="/account/payouts">'.number_format($this->view->owed,3).' GRC</a>,
+			Owed: <a href="/account/payouts">'.number_format($this->view->owed,3).' '.Constants::CURRENCY_ABBREV.'</a>
 		</div>		
 		
 		'.($this->view->orphans?'
@@ -71,7 +71,7 @@ $payoutPanel->setContent('
 		).'
 
 		<div style="margin-bottom:8px;">
-			<i class="fa fa-balance-scale"></i> Minimum Payout: <a href="/account/payoutAddress#minpayout">'.$this->getUser()->getMinPayout().' GRC</a>
+			<i class="fa fa-balance-scale"></i> Minimum Payout: <a href="/account/payoutAddress#minpayout">'.$this->getUser()->getMinPayout().' '.Constants::CURRENCY_ABBREV.'</a>
 		</div>
 		
 		
@@ -111,7 +111,7 @@ $hostPanel->setContent('
 			<i class="fa fa-dashboard"></i> Magnitude: '.number_format($this->view->totalMag,2).'
 		</div>		
 		<div style="margin-bottom:8px;">
-			<i class="fa fa-bitcoin"></i> Estimated Earnings: '.(Utils::truncate($this->view->totalMag*$this->view->magUnit,3)).' GRC/day
+			<i class="fa fa-bitcoin"></i> Estimated Earnings: '.(Utils::truncate($this->view->totalMag*$this->view->magUnit,3)).' '.Constants::CURRENCY_ABBREV.'/day
 		</div>
 
 		<div class="pull-right">

@@ -12,7 +12,7 @@ $panelContent .= '
 	The basics:
 	<ul>
 		<li>Only whitelisted projects are eligible to grant you GRC payments. Have a look at <a href="http://gridcoinstats.eu/projects.php">http://gridcoinstats.eu/projects.php</a>.</li>
-		<li>Don\'t use your CPU in projects that also have GPU workunits. Also don\'t use a GPU or CPU in ASIC projects like Bitcoin Utopia (it was once whitelisted). <!--The grcpool.com has been preconfigured, this should not happen if you do not touch default settings once added a project.--></li> 
+		<li>Don\'t use your CPU in projects that also have GPU workunits. Also don\'t use a GPU or CPU in ASIC projects like Bitcoin Utopia (it was once whitelisted). </li> 
 		<li>Your GRC payments within one project are share based. Every project gets a certain share of the daily coin production. If you are contributing 10% of the calculation power in one project, you get 10% of the GRC that are assigned to this particular project. If you participate in 2 projects with 5% contribution in each project, you get the same amount of GRC like 10% in a single project. This means mining Gridcoin is a competition against other researchers in team Gridcoin within projects. The more you contribute to a project the more you get, in relation to the others.</li>
 		<li>The more CPU cores or GPUs you have the more workunits you can solve and the more GRC you will get.</li>
 		<li>The more relative contribution you have within the whitelisted BOINC projects, the higher your magnitude will be. Magnitude is the figure you have to observe. 1 magnitude equals about 0.25 GRC/day.</li>

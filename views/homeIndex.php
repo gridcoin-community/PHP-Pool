@@ -46,6 +46,7 @@ $webPage->append('
 				<h3>Pool Details</h3>
 				<table class="table table-striped table-hover table-condensed rowpad">
 					<tr><td>Pool CPIDs</td><td style="text-align:right;">
+						'.$this->view->cpid.'<br/>
 						<i class="fa fa-external-link"></i> <a href="'.GrcPool_Utils::getCpidUrl($this->view->cpid).'">stats</a>
 						|
 						<i class="fa fa-external-link"></i> <a href="http://boinc.netsoft-online.com/e107_plugins/boinc/get_user.php?cpid='.$this->view->cpid.'&format=xml">Netsoft</a>

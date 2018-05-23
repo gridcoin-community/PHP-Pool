@@ -61,7 +61,6 @@ if ($this->view->host) {
 	<table class="table table-striped table-hover table-condensed">
 		<tr>
 			<th>Project</th>
-			<th class="text-center">Pool</th>
 			<th class="text-right">Mag</th>
 		</tr>
 ';
@@ -71,7 +70,6 @@ if ($this->view->host) {
 		$panelContent .= '
 		<tr>
 			<td>'.$this->view->accounts[$credit->getAccountId()]->getName().'</td>
-			<td class="text-center">'.$credit->getProjectPoolId().'</td>
 			<td class="text-right">'.$credit->getMag().'</td>
 		</tr>
 	';
@@ -79,7 +77,6 @@ if ($this->view->host) {
 	
 	$panelContent .= '
 			<tr>
-				<td></td>
 				<td></td>
 				<td class="text-right"><strong>'.$magTotal.'</strong></td>
 			</tr>
