@@ -350,6 +350,7 @@ class GrcPool_Controller_Account extends GrcPool_Controller {
 		$this->view->totalMag = $mag;
 		$this->view->owed = $owed;
 		$this->view->numberOfHosts = $numberOfHosts;
+		$this->view->numberOfTasks = 0; // for adding wcg
 		$this->view->messages = $messages;
 		
 	}
