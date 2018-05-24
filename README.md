@@ -6,12 +6,13 @@ This open source project is intended to provide Gridcoin with a mining pool. Thi
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
-### Prerequisites
+### Assumptions &amp; Prerequisites
 
 - PHP 7
 - MySQL
 - Gridcoin Daemon
 - Composer
+- BOINC Accounts
 
 ### Composer Initialization
 
@@ -117,3 +118,10 @@ for entry in /var/www/www.grcpool.com/tasks/_daily/*
  </Location>
 </VirtualHost>
 ```
+
+## BOINC Accounts
+
+You will need to secure BOINC accounts for the projects you want to have in the pool. You will need to manually populate the boinc_account, boinc_account_key, and boinc_account_url tables with the data you use and get from the individual project sites.
+
+After you create your BOINC accounts, you should connect them from your personal BOINC client using the strong key or your account + password. CPID splits might occur if you only attach projects with your weak keys.
+
