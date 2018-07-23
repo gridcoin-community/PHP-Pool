@@ -1,11 +1,8 @@
 {
 	"databaseUser" : "",
 	"databasePassword" : "",
-	"emailServer" : "",
-    "emailPort" : "",
-    "emailSslPort" : "",
-    "emailUsername" : "",
-    "emailPassword" : "",
+	"emailRest" : "",
+	"emailKey" : "",
 	"googleCaptchaPublic" : "",
 	"googleCaptchaPrivate" : "",
 	"cacheDir" : "",
