@@ -105,6 +105,7 @@ for entry in /var/www/www.grcpool.com/tasks/_daily/*
     ServerName open.grcpool.com
     ServerAlias open.grcpool.com
     DocumentRoot /var/www/PHP-Pool/public
+    Alias /assets /var/www/PHP-Pool/assets
     ErrorLog "/var/log/apache2/open.grcpool.com.error.log"
     CustomLog "var/log/apache2/open.grcpool.com.log" common
     RewriteEngine off
