@@ -101,7 +101,7 @@ class GridcoinDaemon {
 	public function getSuperBlockAge() {
 		$data = $this->executeDaemon('superblockage');
 		$data = json_decode($data,true);
-		$data = $data[1];
+		//$data = $data[1];
 		$result = array();
 		$result['timestamp'] = str_replace('-','/',$data['Superblock Timestamp']);
 		$result['age'] = $data['Superblock Age'];
