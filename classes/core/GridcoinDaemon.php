@@ -75,9 +75,9 @@ class GridcoinDaemon {
 	
 	public function getRsa($cpid = '') {
 		if ($cpid == '') {
-			$data = $this->executeDaemon('list rsa');
+			$data = $this->executeDaemon('rsa');
 		} else {
-			$data = $this->executeDaemon('list magnitude '.$cpid);
+			$data = $this->executeDaemon('magnitude '.$cpid);
 		}
 		$json = json_decode($data,true);
 		return $json;
@@ -99,7 +99,7 @@ class GridcoinDaemon {
 	}
 	
 	public function getSuperBlockAge() {
-		$data = $this->executeDaemon('execute superblockage');
+		$data = $this->executeDaemon('superblockage');
 		$data = json_decode($data,true);
 		$data = $data[1];
 		$result = array();
