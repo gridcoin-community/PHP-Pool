@@ -7,10 +7,10 @@ final class RpcTest extends TestCase {
 
 	private function baseData() {
 		$dao = new GrcPool_Member_DAO();
-		$sql = 'delete from grcpool.member where id = 1 or username like \'phptest%\'';$dao->executeQuery($sql);
-		$sql = 'delete from grcpool.member_host where memberId = 1';$dao->executeQuery($sql);
-		$sql = 'delete from grcpool.member_host_project where memberId = 1';$dao->executeQuery($sql);
-		$sql = 'insert into grcpool.member (
+		$sql = 'delete from member where id = 1 or username like \'phptest%\'';$dao->executeQuery($sql);
+		$sql = 'delete from member_host where memberId = 1';$dao->executeQuery($sql);
+		$sql = 'delete from member_host_project where memberId = 1';$dao->executeQuery($sql);
+		$sql = 'insert into member (
 			id,email,username,password,passwordHash,regtime,grcAddress,verifyKey,twoFactorKey,apiKey,apiSecret
 		) values (
 			1,\'phptest@grcpool.com\',\'phptest\',\'\',\'THISISATESTHASH\','.time().',\'\',\'\',\'\',\'\',\'\'
